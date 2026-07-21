@@ -55,6 +55,10 @@
       <div class="stat"><div class="num">1</div><div class="label">資料來源（農業部）</div></div>
     </div>
 
+    <div style="background:var(--red-bg); border:1px solid var(--red); border-radius:12px; padding:14px 18px; margin-bottom:18px; font-size:13.5px; color:var(--red);">
+      <strong>查不到不代表沒問題。</strong> 這份名單只收錄「已經合法登記」的業者，完全沒申請執照的地下繁殖場、地下寵物店根本不會出現在這裡——查無資料時請提高警覺，務必當面要求業者出示許可證正本，或直接向地方動保機關查證。
+    </div>
+
     <div class="reg-search">
       <input type="text" id="qName" placeholder="輸入業者名稱關鍵字，例如：貓舍、犬舍">
       <select id="qCity"><option value="">全部縣市</option></select>
@@ -162,6 +166,8 @@
     <p>業者名單來源：農業部「合法特定寵物業名單」，政府資料開放授權條款第 1 版。裁罰案例摘要自公開新聞報導與地方動保機關公告。飼主回報為使用者提交，經審核後刊出，不代表本站立場。</p>
     <div class="flinks">
       <a href="index.html">回首頁</a>
+      <a href="privacy.html">隱私權政策</a>
+      <a href="terms.html">服務條款</a>
     </div>
   </div>
 </footer>
@@ -206,7 +212,13 @@ function applyFilters(){
 
   shown = 0;
   document.getElementById('resultBody').innerHTML = '';
-  document.getElementById('resultCount').textContent = '符合 ' + filtered.length.toLocaleString() + ' 筆';
+  const name = document.getElementById('qName').value.trim();
+  const countEl = document.getElementById('resultCount');
+  if (filtered.length === 0 && name) {
+    countEl.innerHTML = '<span style="color:var(--red); font-weight:700;">查無「' + name + '」的合法登記紀錄——請務必當面查證許可證，不要僅憑口頭說詞判斷。</span>';
+  } else {
+    countEl.textContent = '符合 ' + filtered.length.toLocaleString() + ' 筆';
+  }
   renderMore();
 }
 
@@ -241,7 +253,7 @@ applyFilters();
 
 <script type="module">
 import { db } from "./firebase-init.js";
-import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { collection, query, where, getDocs, orderBy, limit, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 async function loadCommunityReports() {
   const el = document.getElementById('communityReports');
@@ -270,8 +282,30 @@ async function loadCommunityReports() {
           <span class="badge green">已驗證交易</span>
         </div>
         <p>${r.content || ''}</p>
+        <a href="#" class="flag-link" data-id="${d.id}" data-name="${r.businessName || ''}" style="font-size:12px; color:var(--muted);">這則內容有誤／我是業者想申覆 →</a>
       `;
       el.appendChild(card);
+    });
+
+    el.querySelectorAll('.flag-link').forEach((link) => {
+      link.onclick = async (e) => {
+        e.preventDefault();
+        const reason = prompt('請簡述問題（例如：內容不實、已改善、想申覆說明）：');
+        if (!reason || !reason.trim()) return;
+        try {
+          await addDoc(collection(db, 'flags'), {
+            submissionId: link.dataset.id,
+            businessName: link.dataset.name,
+            reason: reason.trim(),
+            status: 'pending',
+            createdAt: serverTimestamp()
+          });
+          alert('已送出，我們會盡快處理。');
+        } catch (err) {
+          console.error(err);
+          alert('送出失敗，請稍後再試。');
+        }
+      };
     });
   } catch (err) {
     console.error(err);

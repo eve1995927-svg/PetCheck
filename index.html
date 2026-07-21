@@ -70,6 +70,13 @@
   </div>
 </section>
 
+<section class="block" style="padding-top:0;">
+  <div class="wrap">
+    <div class="block-head"><h2>飼主最新分享</h2></div>
+    <div id="recentActivity"><p style="font-size:13px; color:var(--muted);">載入中…</p></div>
+  </div>
+</section>
+
 <section class="block" id="trust">
   <div class="wrap">
     <div class="block-head"><h2>不收業者的錢，資料才站得住腳</h2></div>
@@ -153,13 +160,48 @@
 
 <footer>
   <div class="wrap">
-    <p>登記資料來源：農業部特定寵物業許可名單、動物保護法裁罰公開資料。看診收費為飼主投稿，經審核後刊出，不代表本站立場。本頁為介面示範，所有數字與案例均為示意用途，不對應任何真實業者。</p>
+    <p>登記資料來源：農業部「合法特定寵物業名單」政府資料開放平臺。動物醫院地區清單來源：Google 地圖公開資料。看診收費與犬貓業者回報為飼主投稿，經審核後刊出，不代表本站立場。</p>
     <div class="flinks">
-      <a href="#">關於本站</a>
-      <a href="#">隱私權政策</a>
+      <a href="privacy.html">隱私權政策</a>
+      <a href="terms.html">服務條款</a>
     </div>
   </div>
 </footer>
+
+<script type="module">
+import { db } from "./firebase-init.js";
+import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+async function loadRecentActivity() {
+  const el = document.getElementById('recentActivity');
+  try {
+    const [bizSnap, priceSnap] = await Promise.all([
+      getDocs(query(collection(db, 'submissions'), where('status', '==', 'approved'), where('type', '==', 'business_report'), orderBy('createdAt', 'desc'), limit(5))),
+      getDocs(query(collection(db, 'submissions'), where('status', '==', 'approved'), where('type', '==', 'price_share'), orderBy('createdAt', 'desc'), limit(5)))
+    ]);
+    const items = [];
+    bizSnap.forEach((d) => items.push({ kind: 'biz', ...d.data() }));
+    priceSnap.forEach((d) => items.push({ kind: 'price', ...d.data() }));
+
+    if (items.length === 0) {
+      el.innerHTML = '<div style="background:var(--white); border:1px dashed var(--line-strong); border-radius:16px; padding:30px; text-align:center; color:var(--muted); font-size:14px;">還沒有飼主分享，成為第一個分享的人。</div>';
+      return;
+    }
+
+    items.sort(() => Math.random() - 0.5);
+    el.innerHTML = '<div class="guide-grid">' + items.slice(0, 6).map((it) => {
+      if (it.kind === 'biz') {
+        return `<div class="guide-card"><div class="cat">犬貓業者回報</div><h3>${it.businessName || '（未命名業者）'} · ${it.city || ''}</h3><p>${(it.content || '').slice(0, 60)}</p></div>`;
+      }
+      return `<div class="guide-card"><div class="cat">看診收費分享</div><h3>${it.species || ''} ${it.procedure || ''} · ${it.city || ''}</h3><p>實際支付 NT$${it.amount?.toLocaleString() ?? ''}</p></div>`;
+    }).join('') + '</div>';
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = '<p style="font-size:13px; color:var(--muted);">載入失敗（可能需要在 Firebase 建立複合索引，請查看主控台）。</p>';
+  }
+}
+loadRecentActivity();
+</script>
 
 </body>
 </html>

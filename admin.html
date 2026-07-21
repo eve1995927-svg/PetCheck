@@ -47,6 +47,10 @@
 <div id="adminView" class="wrap hidden" style="display:none; padding-top:24px;">
   <div class="block-head"><h2>待審核項目</h2></div>
   <div id="queueList"></div>
+
+  <div class="block-head" style="margin-top:36px;"><h2>申覆／檢舉案件</h2></div>
+  <div id="flagList"></div>
+
 </div>
 
 <script type="module">
@@ -76,6 +80,7 @@ onAuthStateChanged(auth, (user) => {
     adminView.style.display = 'block';
     logoutLink.style.display = 'inline';
     loadQueue();
+    loadFlags();
   } else {
     loginView.style.display = 'block';
     adminView.style.display = 'none';
@@ -127,6 +132,44 @@ async function loadQueue() {
       const action = btn.dataset.action;
       await updateDoc(doc(db, 'submissions', id), { status: action, reviewedAt: new Date() });
       loadQueue();
+    };
+  });
+}
+
+async function loadFlags() {
+  const list = document.getElementById('flagList');
+  list.innerHTML = '載入中…';
+  let snap;
+  try {
+    const q = query(collection(db, 'flags'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+    snap = await getDocs(q);
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = `<div class="empty" style="color:var(--red);">載入失敗：${err.message}<br><br>若提到 index，請至瀏覽器主控台點藍色連結建立索引。</div>`;
+    return;
+  }
+  if (snap.empty) {
+    list.innerHTML = '<div class="empty">目前沒有待處理的申覆／檢舉</div>';
+    return;
+  }
+  list.innerHTML = '';
+  snap.forEach((d) => {
+    const data = d.data();
+    const item = document.createElement('div');
+    item.className = 'queue-item';
+    item.innerHTML = `
+      <div class="meta">針對：${data.businessName || '（未命名）'} · 提交編號 ${data.submissionId || ''}</div>
+      <p class="content">${data.reason || ''}</p>
+      <div class="actions">
+        <button class="btn-approve" data-id="${d.id}">標記已處理</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+  list.querySelectorAll('button').forEach((btn) => {
+    btn.onclick = async () => {
+      await updateDoc(doc(db, 'flags', btn.dataset.id), { status: 'resolved', resolvedAt: new Date() });
+      loadFlags();
     };
   });
 }
