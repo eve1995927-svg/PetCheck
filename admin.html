@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>審核後台｜寵物通</title>
+<link rel="icon" href="logo.svg">
+<link rel="stylesheet" href="style.css">
+<style>
+.login-box{max-width:360px; margin:80px auto; background:var(--white); border:1px solid var(--line); border-radius:16px; padding:28px;}
+.login-box input{width:100%; box-sizing:border-box; border:1px solid var(--line-strong); border-radius:10px; padding:10px 12px; font-size:14px; margin-bottom:12px;}
+.login-box button{width:100%; background:var(--blue-deep); color:#fff; border:none; padding:12px; border-radius:10px; font-weight:700; cursor:pointer;}
+.err-text{color:var(--red); font-size:13px; margin-top:8px; display:none;}
+.queue-item{background:var(--white); border:1px solid var(--line); border-radius:16px; padding:18px 22px; margin-bottom:14px;}
+.queue-item .meta{font-size:12px; color:var(--muted); margin-bottom:8px;}
+.queue-item .content{font-size:14px; margin:0 0 10px;}
+.queue-item .actions{display:flex; gap:10px;}
+.queue-item .actions button{padding:8px 18px; border-radius:8px; border:1px solid var(--line-strong); font-weight:700; font-size:13px; cursor:pointer; background:var(--white);}
+.btn-approve{color:var(--green); border-color:var(--green) !important;}
+.btn-reject{color:var(--red); border-color:var(--red) !important;}
+.receipt-link{font-size:12px; color:var(--blue);}
+.empty{color:var(--muted); font-size:14px; padding:30px; text-align:center;}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><img src="logo.svg" alt="" class="mark">寵物通</div>
+    <nav class="main-nav">
+      <a href="index.html">首頁</a>
+      <span id="logoutLink" style="cursor:pointer; display:none;">登出</span>
+    </nav>
+  </div>
+</header>
+
+<div id="loginView">
+  <div class="login-box">
+    <h2 style="margin:0 0 16px; font-family:var(--font-display); color:var(--blue-deep);">審核後台登入</h2>
+    <input type="email" id="loginEmail" placeholder="管理員 Email">
+    <input type="password" id="loginPassword" placeholder="密碼">
+    <button id="loginBtn">登入</button>
+    <p class="err-text" id="loginErr">帳號或密碼錯誤</p>
+  </div>
+</div>
+
+<div id="adminView" class="wrap hidden" style="display:none; padding-top:24px;">
+  <div class="block-head"><h2>待審核項目</h2></div>
+  <div id="queueList"></div>
+</div>
+
+<script type="module">
+import { auth, db, storage } from "./firebase-init.js";
+import { signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { collection, query, where, getDocs, doc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const loginView = document.getElementById('loginView');
+const adminView = document.getElementById('adminView');
+const logoutLink = document.getElementById('logoutLink');
+
+document.getElementById('loginBtn').onclick = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (err) {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+};
+
+logoutLink.onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loginView.style.display = 'none';
+    adminView.style.display = 'block';
+    logoutLink.style.display = 'inline';
+    loadQueue();
+  } else {
+    loginView.style.display = 'block';
+    adminView.style.display = 'none';
+    logoutLink.style.display = 'none';
+  }
+});
+
+async function loadQueue() {
+  const list = document.getElementById('queueList');
+  list.innerHTML = '載入中…';
+  const q = query(collection(db, 'submissions'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+  const snap = await getDocs(q);
+  if (snap.empty) {
+    list.innerHTML = '<div class="empty">目前沒有待審核項目</div>';
+    return;
+  }
+  list.innerHTML = '';
+  snap.forEach((d) => {
+    const data = d.data();
+    const item = document.createElement('div');
+    item.className = 'queue-item';
+    const isBusiness = data.type === 'business_report';
+    const title = isBusiness
+      ? `業者回報：${data.businessName || '（未填）'} · ${data.city || ''} · ${data.species || ''}`
+      : `收費分享：${data.species || ''} ${data.procedure || ''} · ${data.city || ''}${data.district || ''} · NT$${data.amount ?? ''}`;
+    const receiptHtml = data.receiptUrl ? `<a class="receipt-link" href="${data.receiptUrl}" target="_blank" rel="noopener">查看上傳憑證 →</a>` : '<span class="receipt-link" style="color:var(--muted);">未上傳憑證</span>';
+    item.innerHTML = `
+      <div class="meta">${title}${data.license ? ' · ' + data.license : ''}</div>
+      <p class="content">${(data.content || '（無備註）')}</p>
+      ${receiptHtml}
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn-approve" data-id="${d.id}" data-action="approved">核准上架</button>
+        <button class="btn-reject" data-id="${d.id}" data-action="rejected">拒絕</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+
+  list.querySelectorAll('button').forEach((btn) => {
+    btn.onclick = async () => {
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      await updateDoc(doc(db, 'submissions', id), { status: action, reviewedAt: new Date() });
+      loadQueue();
+    };
+  });
+}
+</script>
+
+</body>
+</html>

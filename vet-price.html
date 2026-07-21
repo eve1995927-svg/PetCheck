@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>看診費用比价｜寵物通</title>
+<title>看診費用比價｜寵物通</title>
 <link rel="icon" href="logo.svg">
 <link rel="stylesheet" href="style.css">
 <style>
@@ -22,8 +22,8 @@
     <div class="brand"><img src="logo.svg" alt="" class="mark">寵物通</div>
     <nav class="main-nav">
       <a href="index.html">首頁</a>
-      <a href="vet-price.html">看診比价</a>
-      <a href="cattery.html">貓舍查證</a>
+      <a href="vet-price.html">看診比價</a>
+      <a href="cattery.html">犬貓業者查證</a>
       <a href="index.html#trust">防護機制</a>
     </nav>
   </div>
@@ -43,12 +43,7 @@
   </div>
 
   <section class="block" style="padding-top:8px;">
-    <div class="empty-state">
-      <div class="ic">＄</div>
-      <h2>這個項目還沒有已驗證的收費紀錄</h2>
-      <p>看診費用比价需要飼主實際上傳收據才能累積，寵物通剛起步，這裡目前是空的——成為第一個分享的人，幫助之後的飼主有個參考。</p>
-      <a class="banner .btn" href="#" style="display:inline-block; background:var(--blue-deep); color:#fff; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px;">分享我的看診收費</a>
-    </div>
+    <div id="priceResult"><p style="font-size:13px; color:var(--muted);">載入中…</p></div>
   </section>
 
   <section class="block" style="padding-top:0;">
@@ -71,12 +66,89 @@
 
 <footer>
   <div class="wrap">
-    <p>看診收費資料為飼主投稿，經審核後刊出。本頁目前無任何資料，所有數字皆待真實使用者提供，寵物通不會以虛構數字填充頁面。</p>
+    <p>看診收費資料為飼主投稿，經審核後刊出。目前僅顯示「貓、洗牙、臺北市」這組篩選，其餘組合尚未開放互動查詢。</p>
     <div class="flinks">
       <a href="index.html">回首頁</a>
     </div>
   </div>
 </footer>
+
+<script type="module">
+import { db } from "./firebase-init.js";
+import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+function median(nums) {
+  const s = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : Math.round((s[mid - 1] + s[mid]) / 2);
+}
+
+async function loadPrices() {
+  const el = document.getElementById('priceResult');
+  try {
+    const q = query(
+      collection(db, 'submissions'),
+      where('status', '==', 'approved'),
+      where('type', '==', 'price_share'),
+      where('species', '==', '貓'),
+      where('procedure', '==', '洗牙'),
+      where('city', '==', '臺北市'),
+      orderBy('createdAt', 'desc')
+    );
+    const snap = await getDocs(q);
+    const entries = [];
+    snap.forEach((d) => entries.push(d.data()));
+
+    if (entries.length < 3) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <div class="ic">＄</div>
+          <h2>這個項目還沒有足夠的已驗證收費紀錄</h2>
+          <p>目前累積 ${entries.length} 筆，達到 3 筆以上才會公開統計區間，避免單筆資料被誤讀為代表行情。成為分享的一員，幫助之後的飼主有個參考。</p>
+          <a href="submit.html" style="display:inline-block; background:var(--blue-deep); color:#fff; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px;">分享我的看診收費</a>
+        </div>`;
+      return;
+    }
+
+    const amounts = entries.map((e) => e.amount).filter((n) => typeof n === 'number');
+    const min = Math.min(...amounts);
+    const max = Math.max(...amounts);
+    const med = median(amounts);
+    const pct = Math.round(((med - min) / (max - min || 1)) * 100);
+
+    let rows = entries.map((e) => `
+      <div class="entry-row">
+        <div class="price">$${e.amount?.toLocaleString() ?? ''}</div>
+        <div class="district">${e.district || e.city || ''}</div>
+        <div class="note">${e.content || '（無備註）'}</div>
+        <div class="date">已驗證</div>
+      </div>`).join('');
+
+    el.innerHTML = `
+      <div class="price-summary">
+        <h2>貓咪洗牙（含麻醉）· 臺北市</h2>
+        <p class="n">根據 ${entries.length} 筆已驗證收據</p>
+        <div class="price-range">
+          <div class="item"><div class="v">$${min.toLocaleString()}</div><div class="l">最低</div></div>
+          <div class="item"><div class="v">$${med.toLocaleString()}</div><div class="l">中位數</div></div>
+          <div class="item"><div class="v">$${max.toLocaleString()}</div><div class="l">最高</div></div>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;"></div>
+          <div class="bar-marker" style="left:${pct}%;"></div>
+        </div>
+        <div class="bar-labels"><span>$${min.toLocaleString()}</span><span>中位數 $${med.toLocaleString()}</span><span>$${max.toLocaleString()}</span></div>
+      </div>
+      <div class="block-head"><h2>已驗證收費紀錄</h2><p class="hint">為保護業者與飼主雙方，僅顯示地區與價格區間，不公開院所名稱</p></div>
+      <div class="entry-list">${rows}</div>
+    `;
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = '<p style="font-size:13px; color:var(--muted);">載入失敗，稍後再試（可能需要在 Firebase 後台建立複合索引，請查看瀏覽器主控台的連結）。</p>';
+  }
+}
+loadPrices();
+</script>
 
 </body>
 </html>

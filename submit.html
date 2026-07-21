@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>分享心得或收費｜寵物通</title>
+<link rel="icon" href="logo.svg">
+<link rel="stylesheet" href="style.css">
+<style>
+.form-card{background:var(--white); border:1px solid var(--line); border-radius:16px; padding:26px 28px; margin-top:24px;}
+.type-toggle{display:flex; gap:10px; margin-bottom:22px;}
+.type-toggle button{flex:1; padding:12px; border-radius:12px; border:1px solid var(--line-strong); background:var(--white); font-family:var(--font-body); font-size:14px; font-weight:700; cursor:pointer; color:var(--muted);}
+.type-toggle button.active{background:var(--blue-deep); border-color:var(--blue-deep); color:#fff;}
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:13px; font-weight:700; margin-bottom:6px; color:var(--ink);}
+.field .hint{font-size:12px; color:var(--muted); margin:4px 0 0;}
+.field input, .field select, .field textarea{
+  width:100%; border:1px solid var(--line-strong); border-radius:10px; padding:10px 12px;
+  font-family:var(--font-body); font-size:14px; background:var(--paper); color:var(--ink); box-sizing:border-box;
+}
+.field textarea{min-height:90px; resize:vertical;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.submit-btn{width:100%; background:var(--blue-deep); color:#fff; border:none; padding:14px; border-radius:999px; font-weight:700; font-size:15px; cursor:pointer;}
+.submit-btn:disabled{opacity:.5; cursor:not-allowed;}
+.msg{margin-top:14px; padding:12px 16px; border-radius:10px; font-size:13.5px; display:none;}
+.msg.ok{background:var(--green-bg); color:var(--green); display:block;}
+.msg.err{background:var(--red-bg); color:var(--red); display:block;}
+.hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<div class="disclaimer">提交內容需經審核通過後才會公開顯示，全程匿名，我們不會公開您的聯絡方式</div>
+
+<header class="site-header">
+  <div class="wrap">
+    <div class="brand"><img src="logo.svg" alt="" class="mark">寵物通</div>
+    <nav class="main-nav">
+      <a href="index.html">首頁</a>
+      <a href="vet-price.html">看診比價</a>
+      <a href="cattery.html">犬貓業者查證</a>
+      <a href="index.html#trust">防護機制</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap" style="max-width:640px;">
+  <section class="block" style="padding-bottom:0;">
+    <div class="block-head"><h2>分享您的經驗</h2></div>
+    <p style="font-size:14px; color:var(--muted); margin:0;">您提供的每一筆真實資料，都會幫助下一位飼主做出更安心的決定。</p>
+  </section>
+
+  <div class="type-toggle">
+    <button type="button" id="tabBusiness" class="active">回報業者經驗</button>
+    <button type="button" id="tabPrice">分享看診收費</button>
+  </div>
+
+  <form id="businessForm" class="form-card">
+    <div class="field">
+      <label>業者名稱</label>
+      <input type="text" id="b_name" required placeholder="例如：○○貓舍">
+    </div>
+    <div class="field">
+      <label>特寵業字號（若知道，選填）</label>
+      <input type="text" id="b_license" placeholder="例如：特寵業繁字第A1234567號">
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>縣市</label>
+        <select id="b_city" required>
+          <option value="">請選擇</option>
+          <option>臺北市</option><option>新北市</option><option>桃園市</option><option>臺中市</option>
+          <option>臺南市</option><option>高雄市</option><option>基隆市</option><option>新竹市</option>
+          <option>新竹縣</option><option>苗栗縣</option><option>彰化縣</option><option>南投縣</option>
+          <option>雲林縣</option><option>嘉義市</option><option>嘉義縣</option><option>屏東縣</option>
+          <option>宜蘭縣</option><option>花蓮縣</option><option>臺東縣</option><option>澎湖縣</option>
+          <option>金門縣</option><option>連江縣</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>種類</label>
+        <select id="b_species" required>
+          <option value="">請選擇</option>
+          <option>貓</option><option>犬</option><option>犬、貓</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label>您的經驗分享</label>
+      <textarea id="b_content" required placeholder="例如：接貓時環境整潔、疫苗紀錄清楚、溝通順暢；或曾遇到的問題"></textarea>
+    </div>
+    <div class="field">
+      <label>上傳合約或收據（選填，強烈建議上傳以利審核通過）</label>
+      <input type="file" id="b_file" accept="image/*">
+      <p class="hint">僅用於審核真實性，不會公開顯示原始檔案</p>
+    </div>
+    <button type="submit" class="submit-btn" id="b_submit">送出審核</button>
+    <div class="msg" id="b_msg"></div>
+  </form>
+
+  <form id="priceForm" class="form-card hidden">
+    <div class="row2">
+      <div class="field">
+        <label>動物種類</label>
+        <select id="p_species" required>
+          <option value="">請選擇</option>
+          <option>貓</option><option>犬</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>看診項目</label>
+        <select id="p_procedure" required>
+          <option value="">請選擇</option>
+          <option>洗牙</option><option>絕育</option><option>健康檢查</option>
+          <option>疫苗</option><option>皮膚病治療</option><option>其他</option>
+        </select>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>縣市</label>
+        <select id="p_city" required>
+          <option value="">請選擇</option>
+          <option>臺北市</option><option>新北市</option><option>桃園市</option><option>臺中市</option>
+          <option>臺南市</option><option>高雄市</option><option>基隆市</option><option>新竹市</option>
+          <option>新竹縣</option><option>苗栗縣</option><option>彰化縣</option><option>南投縣</option>
+          <option>雲林縣</option><option>嘉義市</option><option>嘉義縣</option><option>屏東縣</option>
+          <option>宜蘭縣</option><option>花蓮縣</option><option>臺東縣</option><option>澎湖縣</option>
+          <option>金門縣</option><option>連江縣</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>行政區（選填）</label>
+        <input type="text" id="p_district" placeholder="例如：大安區">
+      </div>
+    </div>
+    <div class="field">
+      <label>實際支付金額（新臺幣）</label>
+      <input type="number" id="p_amount" required min="0" placeholder="例如：4200">
+    </div>
+    <div class="field">
+      <label>備註（選填）</label>
+      <textarea id="p_content" placeholder="例如：含牙結石清除，未拔牙，術後當日出院"></textarea>
+    </div>
+    <div class="field">
+      <label>上傳收據（選填，強烈建議上傳以利審核通過）</label>
+      <input type="file" id="p_file" accept="image/*">
+      <p class="hint">僅用於審核真實性，不會公開顯示原始檔案，也不會公開院所名稱</p>
+    </div>
+    <button type="submit" class="submit-btn" id="p_submit">送出審核</button>
+    <div class="msg" id="p_msg"></div>
+  </form>
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>提交內容經人工審核後刊出，寵物通不會公開分享者的聯絡方式，爭議與法律責任由平台承擔。</p>
+    <div class="flinks"><a href="index.html">回首頁</a></div>
+  </div>
+</footer>
+
+<script type="module">
+import { db, storage } from "./firebase-init.js";
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
+const tabBusiness = document.getElementById('tabBusiness');
+const tabPrice = document.getElementById('tabPrice');
+const businessForm = document.getElementById('businessForm');
+const priceForm = document.getElementById('priceForm');
+
+tabBusiness.onclick = () => {
+  tabBusiness.classList.add('active'); tabPrice.classList.remove('active');
+  businessForm.classList.remove('hidden'); priceForm.classList.add('hidden');
+};
+tabPrice.onclick = () => {
+  tabPrice.classList.add('active'); tabBusiness.classList.remove('active');
+  priceForm.classList.remove('hidden'); businessForm.classList.add('hidden');
+};
+
+async function uploadReceipt(file) {
+  if (!file) return null;
+  const path = `receipts/${Date.now()}_${Math.random().toString(36).slice(2)}_${file.name}`;
+  const fileRef = ref(storage, path);
+  await uploadBytes(fileRef, file);
+  return await getDownloadURL(fileRef);
+}
+
+function showMsg(el, text, ok) {
+  el.textContent = text;
+  el.className = 'msg ' + (ok ? 'ok' : 'err');
+}
+
+businessForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('b_submit');
+  const msg = document.getElementById('b_msg');
+  btn.disabled = true;
+  try {
+    const file = document.getElementById('b_file').files[0];
+    const receiptUrl = await uploadReceipt(file);
+    await addDoc(collection(db, 'submissions'), {
+      type: 'business_report',
+      businessName: document.getElementById('b_name').value.trim(),
+      license: document.getElementById('b_license').value.trim(),
+      city: document.getElementById('b_city').value,
+      species: document.getElementById('b_species').value,
+      content: document.getElementById('b_content').value.trim(),
+      receiptUrl: receiptUrl,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+    businessForm.reset();
+    showMsg(msg, '已送出，感謝分享！審核通過後會顯示在犬貓業者查證頁面。', true);
+  } catch (err) {
+    console.error(err);
+    showMsg(msg, '送出失敗，請稍後再試。', false);
+  }
+  btn.disabled = false;
+});
+
+priceForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('p_submit');
+  const msg = document.getElementById('p_msg');
+  btn.disabled = true;
+  try {
+    const file = document.getElementById('p_file').files[0];
+    const receiptUrl = await uploadReceipt(file);
+    await addDoc(collection(db, 'submissions'), {
+      type: 'price_share',
+      species: document.getElementById('p_species').value,
+      procedure: document.getElementById('p_procedure').value,
+      city: document.getElementById('p_city').value,
+      district: document.getElementById('p_district').value.trim(),
+      amount: Number(document.getElementById('p_amount').value),
+      content: document.getElementById('p_content').value.trim(),
+      receiptUrl: receiptUrl,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+    priceForm.reset();
+    showMsg(msg, '已送出，感謝分享！審核通過後會顯示在看診比價頁面。', true);
+  } catch (err) {
+    console.error(err);
+    showMsg(msg, '送出失敗，請稍後再試。', false);
+  }
+  btn.disabled = false;
+});
+</script>
+
+</body>
+</html>

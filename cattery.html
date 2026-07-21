@@ -137,13 +137,21 @@
     </div>
   </section>
 
+  <section class="block" style="padding-top:0;">
+    <div class="block-head">
+      <h2>飼主真實回報</h2>
+      <p class="hint">由飼主提交、審核通過後上架，非官方資料</p>
+    </div>
+    <div id="communityReports"><p style="font-size:13px; color:var(--muted);">載入中…</p></div>
+  </section>
+
   <section class="block">
     <div class="banner">
       <div>
         <h2>也在這裡接過貓狗嗎？</h2>
-        <p>上傳合約或收據即可分享心得，全程匿名，24 小時內審核上架。</p>
+        <p>上傳合約或收據即可分享心得，全程匿名，審核通過後會顯示在上方。</p>
       </div>
-      <a class="btn" href="#">分享我的評價</a>
+      <a class="btn" href="submit.html">分享我的評價</a>
     </div>
   </section>
 
@@ -151,12 +159,13 @@
 
 <footer>
   <div class="wrap">
-    <p>業者名單來源：農業部「合法特定寵物業名單」，政府資料開放授權條款第 1 版。裁罰案例摘要自公開新聞報導與地方動保機關公告。評價功能尚未有真實資料。</p>
+    <p>業者名單來源：農業部「合法特定寵物業名單」，政府資料開放授權條款第 1 版。裁罰案例摘要自公開新聞報導與地方動保機關公告。飼主回報為使用者提交，經審核後刊出，不代表本站立場。</p>
     <div class="flinks">
       <a href="index.html">回首頁</a>
     </div>
   </div>
 </footer>
+
 
 <script src="cattery-data.js"></script>
 <script>
@@ -228,6 +237,48 @@ document.getElementById('loadMoreBtn').addEventListener('click', renderMore);
 
 initFilters();
 applyFilters();
+</script>
+
+<script type="module">
+import { db } from "./firebase-init.js";
+import { collection, query, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+async function loadCommunityReports() {
+  const el = document.getElementById('communityReports');
+  try {
+    const q = query(
+      collection(db, 'submissions'),
+      where('status', '==', 'approved'),
+      where('type', '==', 'business_report'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) {
+      el.innerHTML = '<div class="empty-note" style="background:var(--white); border:1px dashed var(--line-strong); border-radius:16px; padding:30px; text-align:center; color:var(--muted); font-size:14px;">目前還沒有審核通過的飼主回報，成為第一個分享的人。</div>';
+      return;
+    }
+    el.innerHTML = '';
+    snap.forEach((d) => {
+      const r = d.data();
+      const card = document.createElement('div');
+      card.className = 'review-card';
+      card.innerHTML = `
+        <div class="head">
+          <span style="font-weight:700; font-size:14px;">${r.businessName || '（未命名業者）'}</span>
+          <span class="badge blue">${r.city || ''}</span>
+          <span class="badge green">已驗證交易</span>
+        </div>
+        <p>${r.content || ''}</p>
+      `;
+      el.appendChild(card);
+    });
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = '<p style="font-size:13px; color:var(--muted);">載入失敗，稍後再試。</p>';
+  }
+}
+loadCommunityReports();
 </script>
 
 </body>
