@@ -3,13 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>示範貓舍（虛構案例）｜寵物通</title>
+<title>合法特定寵物業查詢｜寵物通</title>
 <link rel="icon" href="logo.svg">
 <link rel="stylesheet" href="style.css">
+<style>
+.reg-search{display:flex; gap:10px; flex-wrap:wrap; margin:28px 0 18px;}
+.reg-search select, .reg-search input{
+  height:40px; border:1px solid var(--line-strong); border-radius:10px; padding:0 14px;
+  font-family:var(--font-body); font-size:14px; background:var(--white); color:var(--ink);
+}
+.reg-search input{flex:1; min-width:180px;}
+.reg-count{font-size:13px; color:var(--muted); margin:0 0 14px;}
+.reg-table-wrap{background:var(--white); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+.reg-row{display:grid; grid-template-columns:70px 1.4fr 90px 1.2fr 90px 90px; gap:12px; align-items:center; padding:13px 20px; border-bottom:1px solid var(--line); font-size:13px;}
+.reg-row.head{background:var(--blue-pale); color:var(--blue-deep); font-weight:700; font-size:12px;}
+.reg-row:last-child{border-bottom:none;}
+.reg-row .name{font-weight:700; color:var(--ink);}
+.reg-row .license{font-family:var(--font-mono); font-size:11.5px; color:var(--muted); word-break:break-all;}
+.reg-more{display:block; width:100%; text-align:center; padding:14px; font-size:13px; font-weight:700; background:var(--white); border:1px solid var(--line); border-radius:12px; margin-top:12px; cursor:pointer;}
+.reg-more:hover{background:var(--blue-pale);}
+</style>
 </head>
 <body>
 
-<div class="disclaimer">本站為介面示範 DEMO，「示範貓舍」為虛構名稱與案例，不代表任何真實業者</div>
+<div class="disclaimer">以下業者資料來源：農業部「合法特定寵物業名單」政府資料開放平臺，由使用者提供 ODS 檔匯入，非本站自動抓取</div>
 
 <header class="site-header">
   <div class="wrap">
@@ -25,86 +42,89 @@
 
 <div class="wrap">
 
-  <div class="entity-head">
-    <div class="row">
-      <h1>示範貓舍（DEMO 虛構案例）</h1>
-      <span class="badge blue">評鑑：甲等</span>
-      <span class="badge green">已驗證交易 19 筆</span>
+  <section class="block" style="padding-top:32px;">
+    <div class="block-head">
+      <h2>合法特定寵物業查詢</h2>
+      <p class="hint">輸入業者名稱或選擇縣市，資料每季隨政府開放平臺更新</p>
     </div>
-    <p class="reg-meta">特寵業繁字第 DEMO0000 號　登記地址 台北市＊＊區＊＊路（示範地址）　核准品種 英國短毛貓</p>
 
-    <div class="metric-row">
-      <div class="m"><div class="num">4.4</div><div class="label">平均評分</div></div>
-      <div class="m"><div class="num">14</div><div class="label">已驗證評價</div></div>
-      <div class="m"><div class="num">1</div><div class="label">動保法裁罰紀錄</div></div>
-      <div class="m"><div class="num">2019</div><div class="label">許可核發年份</div></div>
+    <div class="stats" style="margin-top:0;">
+      <div class="stat"><div class="num" id="statTotal">-</div><div class="label">合法登記業者</div></div>
+      <div class="stat"><div class="num" id="statCity">-</div><div class="label">涵蓋縣市</div></div>
+      <div class="stat"><div class="num" id="statGraded">-</div><div class="label">有評鑑紀錄</div></div>
+      <div class="stat"><div class="num">1</div><div class="label">資料來源（農業部）</div></div>
     </div>
-  </div>
+
+    <div class="reg-search">
+      <input type="text" id="qName" placeholder="輸入業者名稱關鍵字，例如：貓舍、犬舍">
+      <select id="qCity"><option value="">全部縣市</option></select>
+      <select id="qSpecies">
+        <option value="">全部種類</option>
+        <option value="貓">貓</option>
+        <option value="犬">犬</option>
+      </select>
+      <select id="qGraded">
+        <option value="">全部評鑑狀態</option>
+        <option value="has">有評鑑紀錄</option>
+        <option value="none">無評鑑紀錄</option>
+      </select>
+    </div>
+
+    <p class="reg-count" id="resultCount">查詢中…</p>
+
+    <div class="reg-table-wrap">
+      <div class="reg-row head">
+        <div>縣市</div><div>場所名稱</div><div>種類</div><div>許可證字號</div><div>評鑑等級</div><div>有效日期</div>
+      </div>
+      <div id="resultBody"></div>
+    </div>
+    <button class="reg-more" id="loadMoreBtn">載入更多</button>
+  </section>
 
   <section class="block" style="padding-top:0;">
-    <div class="block-head"><h2>登記資料</h2></div>
-    <div style="background:var(--white); border:1px solid var(--line); border-radius:12px; padding:22px 26px;">
-      <table class="reg-table">
-        <tr><td>特寵業字號</td><td style="font-family:var(--font-mono);">特寵業繁字第 DEMO0000 號</td></tr>
-        <tr><td>營業項目</td><td>繁殖、買賣</td></tr>
-        <tr><td>評鑑等級（最近一次）</td><td>甲等</td></tr>
-        <tr><td>許可證有效期</td><td>2025-01 至 2028-01（示範日期）</td></tr>
-        <tr><td>負責人</td><td>陳＊玲（示範）</td></tr>
-      </table>
+    <div class="block-head"><h2>怎麼解讀這份名單</h2></div>
+    <div class="trust-grid" style="grid-template-columns:repeat(2,1fr);">
+      <div class="trust-card">
+        <div class="ic">i</div>
+        <h3>合法不等於品質保證</h3>
+        <p>名單只代表業者取得許可證，實際照護品質仍需搭配評鑑等級、裁罰紀錄與飼主評價一起查看。</p>
+      </div>
+      <div class="trust-card">
+        <div class="ic">i</div>
+        <h3>評鑑等級是最近兩次紀錄</h3>
+        <p>格式為「等級＋年度」，例如「甲等2024/優等2022」代表最近一次甲等、前一次優等；空白代表尚無評鑑紀錄。</p>
+      </div>
     </div>
   </section>
 
   <section class="block" style="padding-top:0;">
-    <div class="block-head"><h2>動保法裁罰紀錄</h2></div>
-    <div style="background:var(--white); border:1px solid var(--line); border-radius:12px; padding:20px 22px;">
-      <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
-        <span class="badge amber">籠舍空間不足</span>
-        <span style="font-family:var(--font-mono); font-size:12px; color:var(--muted);">2023 年度裁罰（示範案例）</span>
-      </div>
-      <p style="font-size:13.5px; color:var(--muted); margin:0;">地方動保處稽查時發現部分籠舍未達最低空間標準，處以罰鍰並限期改善，複查後已通過改善確認。</p>
-    </div>
-  </section>
-
-  <section class="block" style="padding-top:0;">
-    <div class="block-head"><h2>飼主真實評價</h2></div>
+    <div class="block-head"><h2>近期公開裁罰案例</h2></div>
 
     <div class="review-card">
       <div class="head">
-        <div class="avatar">李</div>
-        <span style="font-weight:700; font-size:14px;">李＊＊</span>
-        <span class="stars">★★★★☆</span>
-        <span class="badge green">已驗證交易</span>
-        <span class="date">2026-05</span>
+        <span class="badge red">重大裁罰</span>
+        <span class="badge blue">苗栗縣</span>
+        <span class="date">2025-11</span>
       </div>
-      <p>接貓當天有完整看到爸媽貓與生活環境，疫苗紀錄清楚，但溝通回覆速度偏慢。</p>
+      <h3 style="font-size:16px; margin:2px 0 8px;">人人犬舍：290 隻犬中逾九成遭違法剪聲帶，曾獲評鑑優等</h3>
+      <p>苗栗縣公館鄉「人人犬舍」經動保機關稽查，發現場內 290 隻犬隻中超過九成被施以未經許可的聲帶手術，另有使用高齡、患病母犬繁殖及籠舍超養等多項違規。縣府依動物保護法及特定寵物業管理辦法規定，累計裁罰新臺幣 480 萬 9 千元並廢止繁殖業許可證。這家業者在稽查前的評鑑仍列為優等，顯示評鑑等級無法完全反映日常照護狀況，仍需搭配裁罰紀錄一起查看。</p>
       <div class="reply">
-        <p class="lbl">業者回覆</p>
-        <p>近期繁殖季節較忙，已增加人手處理訊息，感謝提醒。</p>
+        <p class="lbl">資料來源</p>
+        <p>苗栗縣動物保護防疫所稽查結果；相關報導：鏡週刊、客新聞、壹蘋新聞網（2025 年 11 月）</p>
       </div>
     </div>
 
     <div class="review-card">
       <div class="head">
-        <div class="avatar">周</div>
-        <span style="font-weight:700; font-size:14px;">周＊＊</span>
-        <span class="stars">★★★★★</span>
-        <span class="badge green">已驗證交易</span>
-        <span class="date">2026-02</span>
+        <span class="badge amber">停業處分</span>
+        <span class="badge blue">臺北市</span>
+        <span class="date">2020-06</span>
       </div>
-      <p>幼貓社會化程度很好，離乳時間足夠，接貓後健康狀況穩定。</p>
-    </div>
-
-    <div class="review-card">
-      <div class="head">
-        <div class="avatar">吳</div>
-        <span style="font-weight:700; font-size:14px;">吳＊＊</span>
-        <span class="stars">★★★☆☆</span>
-        <span class="badge green">已驗證交易</span>
-        <span class="date">2025-10</span>
-      </div>
-      <p>貓咪本身健康沒問題，但合約條款寫得不夠清楚，建議簽約前多問清楚保固範圍。</p>
+      <h3 style="font-size:16px; margin:2px 0 8px;">晶采英短培育貓舍：無照繁殖遭裁罰 60 萬元並命停業</h3>
+      <p>臺北市動物保護處接獲通報，查獲「晶采英短培育貓舍」在未取得特定寵物業許可證的情況下繁殖及買賣貓隻，現場清點 43 隻貓中僅少數已結紮。動保處依動物保護法規定裁處 60 萬元罰鍰、命令停業，並要求負責人接受動保講習。負責人提起行政訴訟後，臺北高等行政法院認定原處分合法，業者敗訴。</p>
       <div class="reply">
-        <p class="lbl">業者尚未回覆</p>
+        <p class="lbl">資料來源</p>
+        <p>臺北市動物保護處稽查結果；相關報導：聯合新聞網（2020 年 6 月）</p>
       </div>
     </div>
   </section>
@@ -112,7 +132,7 @@
   <section class="block">
     <div class="banner">
       <div>
-        <h2>也在這裡接過貓嗎？</h2>
+        <h2>也在這裡接過貓狗嗎？</h2>
         <p>上傳合約或收據即可分享心得，全程匿名，24 小時內審核上架。</p>
       </div>
       <a class="btn" href="#">分享我的評價</a>
@@ -123,13 +143,84 @@
 
 <footer>
   <div class="wrap">
-    <p>登記與評鑑資料來源：農業部特定寵物業許可名單。裁罰摘要來源：地方動保機關公開資料。評價為飼主投稿，經審核後刊出，不代表本站立場。本頁為介面示範，業者名稱、字號與案例均為虛構。</p>
+    <p>業者名單來源：農業部「合法特定寵物業名單」，政府資料開放授權條款第 1 版。裁罰案例摘要自公開新聞報導與地方動保機關公告。評價功能尚未有真實資料。</p>
     <div class="flinks">
       <a href="index.html">回首頁</a>
-      <a href="#">檢舉不實資訊</a>
     </div>
   </div>
 </footer>
+
+<script src="cattery-data.js"></script>
+<script>
+const PAGE_SIZE = 30;
+let shown = 0;
+let filtered = [];
+
+function uniqueSorted(arr){ return Array.from(new Set(arr)).filter(Boolean).sort(); }
+
+function initFilters(){
+  const cities = uniqueSorted(CATTERY_DATA.map(d => d.city));
+  const citySel = document.getElementById('qCity');
+  cities.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    citySel.appendChild(opt);
+  });
+
+  document.getElementById('statTotal').textContent = CATTERY_DATA.length.toLocaleString();
+  document.getElementById('statCity').textContent = cities.length;
+  document.getElementById('statGraded').textContent = CATTERY_DATA.filter(d => d.grade).length.toLocaleString();
+}
+
+function applyFilters(){
+  const name = document.getElementById('qName').value.trim();
+  const city = document.getElementById('qCity').value;
+  const species = document.getElementById('qSpecies').value;
+  const graded = document.getElementById('qGraded').value;
+
+  filtered = CATTERY_DATA.filter(d => {
+    if (name && !d.name.includes(name)) return false;
+    if (city && d.city !== city) return false;
+    if (species && !d.species.includes(species)) return false;
+    if (graded === 'has' && !d.grade) return false;
+    if (graded === 'none' && d.grade) return false;
+    return true;
+  });
+
+  shown = 0;
+  document.getElementById('resultBody').innerHTML = '';
+  document.getElementById('resultCount').textContent = '符合 ' + filtered.length.toLocaleString() + ' 筆';
+  renderMore();
+}
+
+function renderMore(){
+  const body = document.getElementById('resultBody');
+  const slice = filtered.slice(shown, shown + PAGE_SIZE);
+  slice.forEach(d => {
+    const row = document.createElement('div');
+    row.className = 'reg-row';
+    row.innerHTML =
+      '<div>' + d.city + '</div>' +
+      '<div class="name">' + d.name + '</div>' +
+      '<div>' + d.species + '</div>' +
+      '<div class="license">' + d.license + '</div>' +
+      '<div>' + (d.grade || '－') + '</div>' +
+      '<div>' + d.valid + '</div>';
+    body.appendChild(row);
+  });
+  shown += slice.length;
+  document.getElementById('loadMoreBtn').style.display = shown >= filtered.length ? 'none' : 'block';
+}
+
+document.getElementById('qName').addEventListener('input', applyFilters);
+document.getElementById('qCity').addEventListener('change', applyFilters);
+document.getElementById('qSpecies').addEventListener('change', applyFilters);
+document.getElementById('qGraded').addEventListener('change', applyFilters);
+document.getElementById('loadMoreBtn').addEventListener('click', renderMore);
+
+initFilters();
+applyFilters();
+</script>
 
 </body>
 </html>

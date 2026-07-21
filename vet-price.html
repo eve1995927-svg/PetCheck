@@ -3,13 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>貓 洗牙 台北市｜看診費用比价 - 寵物通</title>
+<title>看診費用比价｜寵物通</title>
 <link rel="icon" href="logo.svg">
 <link rel="stylesheet" href="style.css">
+<style>
+.empty-state{background:var(--white); border:1px dashed var(--line-strong); border-radius:16px; padding:48px 30px; text-align:center;}
+.empty-state .ic{width:52px; height:52px; border-radius:50%; background:var(--blue-pale); color:var(--blue-deep); display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto 16px;}
+.empty-state h2{font-family:var(--font-display); font-size:19px; margin:0 0 8px; color:var(--blue-deep);}
+.empty-state p{font-size:14px; color:var(--muted); max-width:420px; margin:0 auto 20px;}
+</style>
 </head>
 <body>
 
-<div class="disclaimer">本站為介面示範 DEMO，所有數字與紀錄皆為虛構，不代表任何真實業者或真實交易</div>
+<div class="disclaimer">此功能尚未有真實使用者資料，以下為誠實的空狀態，不顯示任何虛構價格</div>
 
 <header class="site-header">
   <div class="wrap">
@@ -36,65 +42,28 @@
     <span class="pill">全台</span>
   </div>
 
-  <div class="price-summary">
-    <h2>貓咪洗牙（含麻醉）· 臺北市</h2>
-    <p class="n">根據 86 筆已驗證收據，過去 12 個月</p>
-
-    <div class="price-range">
-      <div class="item"><div class="v">$3,200</div><div class="l">最低</div></div>
-      <div class="item"><div class="v">$6,800</div><div class="l">中位數</div></div>
-      <div class="item"><div class="v">$14,500</div><div class="l">最高</div></div>
-    </div>
-
-    <div class="bar-track">
-      <div class="bar-fill" style="width:47%;"></div>
-      <div class="bar-marker" style="left:47%;"></div>
-    </div>
-    <div class="bar-labels">
-      <span>$3,200</span>
-      <span>中位數 $6,800</span>
-      <span>$14,500</span>
-    </div>
-  </div>
-
-  <section class="block" style="padding-top:0;">
-    <div class="block-head">
-      <h2>已驗證收費紀錄</h2>
-      <p class="hint">為保護業者與飼主雙方，僅顯示地區與價格區間，不公開院所名稱</p>
-    </div>
-    <div class="entry-list">
-      <div class="entry-row"><div class="price">$4,200</div><div class="district">大安區</div><div class="note">含牙結石清除，未拔牙，術後當日出院</div><div class="date">2026-06</div></div>
-      <div class="entry-row"><div class="price">$8,900</div><div class="district">信義區</div><div class="note">含拔除 2 顆牙齒，另加驗血項目</div><div class="date">2026-06</div></div>
-      <div class="entry-row"><div class="price">$5,600</div><div class="district">中山區</div><div class="note">單純洗牙，附送術前健檢報告</div><div class="date">2026-05</div></div>
-      <div class="entry-row"><div class="price">$12,000</div><div class="district">士林區</div><div class="note">高齡貓需血檢加做心臟評估後才手術</div><div class="date">2026-05</div></div>
-      <div class="entry-row"><div class="price">$3,800</div><div class="district">文山區</div><div class="note">診所推廣期優惠價，含一次回診</div><div class="date">2026-04</div></div>
-      <div class="entry-row"><div class="price">$7,200</div><div class="district">松山區</div><div class="note">一般行情價，無額外處置</div><div class="date">2026-04</div></div>
+  <section class="block" style="padding-top:8px;">
+    <div class="empty-state">
+      <div class="ic">＄</div>
+      <h2>這個項目還沒有已驗證的收費紀錄</h2>
+      <p>看診費用比价需要飼主實際上傳收據才能累積，寵物通剛起步，這裡目前是空的——成為第一個分享的人，幫助之後的飼主有個參考。</p>
+      <a class="banner .btn" href="#" style="display:inline-block; background:var(--blue-deep); color:#fff; padding:12px 22px; border-radius:999px; font-weight:700; font-size:14px;">分享我的看診收費</a>
     </div>
   </section>
 
   <section class="block" style="padding-top:0;">
-    <div class="block-head"><h2>為什麼不公開院所名稱</h2></div>
+    <div class="block-head"><h2>資料會怎麼呈現</h2></div>
     <div class="trust-grid" style="grid-template-columns:repeat(2,1fr);">
       <div class="trust-card">
         <div class="ic">i</div>
-        <h3>价格是事實，不是評價</h3>
-        <p>顯示區間與分布，讓飼主有議價依據，不做針對特定院所的指控。</p>
+        <h3>累積到一定筆數才會顯示</h3>
+        <p>單一地區單一項目累積超過一定筆數的已驗證紀錄後，才會公開統計區間，避免單筆資料被誤讀為代表行情。</p>
       </div>
       <div class="trust-card">
         <div class="ic">i</div>
-        <h3>降低爭議，保留查證空間</h3>
-        <p>院所層級的资料留待更嚴謹的驗證機制成熟後，於進階功能中謹慎推出。</p>
+        <h3>不指名院所，只看地區與金額</h3>
+        <p>即使資料累積起來，也只會顯示行政區與價格，不公開院所名稱，詳見「防護機制」說明。</p>
       </div>
-    </div>
-  </section>
-
-  <section class="block">
-    <div class="banner">
-      <div>
-        <h2>也帶毛孩去洗牙了？</h2>
-        <p>上傳收據即可分享您付的價格，全程匿名，幫助下一位飼主做功課。</p>
-      </div>
-      <a class="btn" href="#">分享我的收費紀錄</a>
     </div>
   </section>
 
@@ -102,7 +71,7 @@
 
 <footer>
   <div class="wrap">
-    <p>收費資料為飼主投稿，經審核後刊出，僅顯示地區與金額，不代表本站立場。本頁為介面示範，所有數字與紀錄均為虛構。</p>
+    <p>看診收費資料為飼主投稿，經審核後刊出。本頁目前無任何資料，所有數字皆待真實使用者提供，寵物通不會以虛構數字填充頁面。</p>
     <div class="flinks">
       <a href="index.html">回首頁</a>
     </div>
