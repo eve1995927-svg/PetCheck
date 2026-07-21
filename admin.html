@@ -86,8 +86,15 @@ onAuthStateChanged(auth, (user) => {
 async function loadQueue() {
   const list = document.getElementById('queueList');
   list.innerHTML = '載入中…';
-  const q = query(collection(db, 'submissions'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
-  const snap = await getDocs(q);
+  let snap;
+  try {
+    const q = query(collection(db, 'submissions'), where('status', '==', 'pending'), orderBy('createdAt', 'desc'));
+    snap = await getDocs(q);
+  } catch (err) {
+    console.error(err);
+    list.innerHTML = `<div class="empty" style="color:var(--red);">載入失敗：${err.message}<br><br>若錯誤訊息提到 index，請打開瀏覽器主控台（F12），點裡面的藍色連結建立複合索引，1-2 分鐘後重新整理本頁。</div>`;
+    return;
+  }
   if (snap.empty) {
     list.innerHTML = '<div class="empty">目前沒有待審核項目</div>';
     return;
